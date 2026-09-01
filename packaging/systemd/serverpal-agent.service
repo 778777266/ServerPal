@@ -1,0 +1,32 @@
+[Unit]
+Description=ServerPal privileged local agent
+Documentation=https://github.com/778777266/ServerPal
+Wants=network-online.target serverpal-pm2.service
+After=network-online.target serverpal-pm2.service caddy.service
+
+[Service]
+Type=simple
+User=root
+Group=serverpal
+ExecStart=/opt/serverpal/current/serverpal agent --config /etc/serverpal/config.json
+Restart=on-failure
+RestartSec=3s
+TimeoutStopSec=15s
+RuntimeDirectory=serverpal
+RuntimeDirectoryMode=0750
+UMask=0027
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+RestrictRealtime=true
+LockPersonality=true
+SystemCallArchitectures=native
+ReadWritePaths=/etc/caddy/sites.d /var/lib/serverpal/app-home /var/lib/serverpal/pm2 /srv/serverpal/apps
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

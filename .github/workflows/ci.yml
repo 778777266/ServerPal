@@ -1,0 +1,51 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.7"
+          cache: true
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - run: npm audit --omit=dev --audit-level=high
+      - run: go test ./cmd/... ./internal/...
+      - run: go vet ./cmd/... ./internal/...
+      - run: go run golang.org/x/vuln/cmd/govulncheck@v1.7.0 ./...
+      - run: bash -n install.sh scripts/build-release.sh scripts/serverpal-update
+      - run: shellcheck install.sh scripts/build-release.sh scripts/serverpal-update
+      - name: Cross-compile Linux release archives
+        env:
+          SERVERPAL_SKIP_WEB_BUILD: "1"
+        run: bash scripts/build-release.sh v0.0.0-ci
+      - name: Smoke-test Ubuntu installation
+        env:
+          SERVERPAL_ARCHIVE: ${{ github.workspace }}/dist/serverpal-linux-amd64.tar.gz
+        run: sudo --preserve-env=SERVERPAL_ARCHIVE bash install.sh
+      - name: Verify installed services and isolation
+        run: |
+          health="$(curl -fsS http://127.0.0.1:8787/api/health)"
+          [[ "${health}" == *'"agent":"ok"'* ]]
+          [[ "${health}" == *'"version":"v0.0.0-ci"'* ]]
+          systemctl is-active --quiet serverpal-pm2.service serverpal-agent.service serverpal-web.service
+          [[ "$(id -nG serverpal-app | tr ' ' '\n' | grep -Fx serverpal || true)" == "" ]]
+          sudo -u serverpal-app test ! -r /etc/serverpal/agent.token
+          sudo -u serverpal-app test ! -r /var/lib/serverpal/serverpal.db
+          sudo -u serverpal-app /opt/serverpal/node/current/bin/node --version
+          sudo -u serverpal-app env HOME=/var/lib/serverpal/app-home PM2_HOME=/var/lib/serverpal/pm2 PATH=/opt/serverpal/pm2-runtime/bin:/opt/serverpal/node/current/bin:/usr/local/bin:/usr/bin:/bin /opt/serverpal/pm2-runtime/bin/pm2 --version

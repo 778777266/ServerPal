@@ -1,0 +1,2 @@
+# ServerPal managed sites are validated before Caddy reloads them.
+import /etc/caddy/sites.d/*.caddy

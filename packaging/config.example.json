@@ -1,0 +1,21 @@
+{
+  "listen": "127.0.0.1:8787",
+  "dataDir": "/var/lib/serverpal",
+  "agentSocket": "/run/serverpal/agent.sock",
+  "agentGroup": "serverpal",
+  "agentTokenFile": "/etc/serverpal/agent.token",
+  "allowedRoots": [
+    "/srv/serverpal/apps"
+  ],
+  "projectUser": "serverpal-app",
+  "projectHome": "/var/lib/serverpal/app-home",
+  "pm2Binary": "/opt/serverpal/pm2-runtime/bin/pm2",
+  "pm2Home": "/var/lib/serverpal/pm2",
+  "nodeBinary": "/opt/serverpal/node/current/bin/node",
+  "caddyBinary": "/usr/bin/caddy",
+  "caddyConfig": "/etc/caddy/Caddyfile",
+  "caddySitesDir": "/etc/caddy/sites.d",
+  "caddyGroup": "caddy",
+  "terminalEnabled": true,
+  "releaseBaseUrl": "https://github.com/778777266/ServerPal/releases"
+}

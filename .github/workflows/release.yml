@@ -1,0 +1,44 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.7"
+          cache: true
+      - name: Verify release
+        run: |
+          npm ci
+          npm run lint
+          npm run build
+          npm audit --omit=dev --audit-level=high
+          go test ./cmd/... ./internal/...
+          go vet ./cmd/... ./internal/...
+          go run golang.org/x/vuln/cmd/govulncheck@v1.7.0 ./...
+          bash -n install.sh scripts/build-release.sh scripts/serverpal-update
+          shellcheck install.sh scripts/build-release.sh scripts/serverpal-update
+      - name: Build release artifacts
+        env:
+          SERVERPAL_SKIP_WEB_BUILD: "1"
+        run: bash scripts/build-release.sh "${GITHUB_REF_NAME}"
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${GITHUB_REF_NAME}" dist/* --generate-notes --verify-tag

@@ -1,0 +1,35 @@
+[Unit]
+Description=ServerPal web control plane
+Documentation=https://github.com/778777266/ServerPal
+Wants=network-online.target
+After=network-online.target serverpal-agent.service
+Requires=serverpal-agent.service
+
+[Service]
+Type=simple
+User=serverpal
+Group=serverpal
+ExecStart=/opt/serverpal/current/serverpal serve --config /etc/serverpal/config.json
+Restart=on-failure
+RestartSec=3s
+TimeoutStopSec=15s
+UMask=0027
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+LockPersonality=true
+SystemCallArchitectures=native
+ReadWritePaths=/var/lib/serverpal
+ReadOnlyPaths=/etc/serverpal
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

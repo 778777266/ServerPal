@@ -1,0 +1,36 @@
+[Unit]
+Description=ServerPal PM2 process daemon
+Documentation=https://pm2.keymetrics.io/
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=serverpal-app
+Group=serverpal-app
+Environment=HOME=/var/lib/serverpal/app-home
+Environment=PM2_HOME=/var/lib/serverpal/pm2
+Environment=PATH=/opt/serverpal/pm2-runtime/bin:/opt/serverpal/node/current/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=-/opt/serverpal/pm2-runtime/bin/pm2 resurrect
+ExecReload=-/opt/serverpal/pm2-runtime/bin/pm2 reload all
+ExecStop=-/opt/serverpal/pm2-runtime/bin/pm2 kill
+RemainAfterExit=yes
+TimeoutStartSec=30s
+TimeoutStopSec=30s
+UMask=0027
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+LockPersonality=true
+SystemCallArchitectures=native
+ReadWritePaths=/var/lib/serverpal/pm2 /var/lib/serverpal/app-home /srv/serverpal/apps
+
+[Install]
+WantedBy=multi-user.target
