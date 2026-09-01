@@ -249,7 +249,7 @@ func (s *Store) Projects(ctx context.Context) ([]Project, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	var projects []Project
+	projects := make([]Project, 0)
 	for rows.Next() {
 		p, err := scanProject(rows)
 		if err != nil {
@@ -309,7 +309,7 @@ func (s *Store) Domains(ctx context.Context) ([]Domain, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	var domains []Domain
+	domains := make([]Domain, 0)
 	for rows.Next() {
 		d, err := scanDomain(rows)
 		if err != nil {
@@ -377,7 +377,7 @@ func (s *Store) AuditLogs(ctx context.Context, limit int) ([]AuditLog, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	var logs []AuditLog
+	logs := make([]AuditLog, 0)
 	for rows.Next() {
 		var item AuditLog
 		var created int64

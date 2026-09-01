@@ -6,6 +6,7 @@ export const demoMode = import.meta.env.VITE_DEMO === "true";
 let csrfToken = "";
 
 type APIRequestInit = Omit<RequestInit, "body"> & { body?: unknown };
+type ListResponse<T> = { items: T[] | null };
 
 export function setCSRFToken(value?: string) {
   csrfToken = value ?? "";
@@ -38,6 +39,7 @@ async function request<T>(path: string, init: APIRequestInit = {}): Promise<T> {
 }
 
 const pause = () => new Promise((resolve) => setTimeout(resolve, 180));
+const listItems = <T>(response: ListResponse<T>): T[] => response.items ?? [];
 
 export const api = {
   async authStatus(): Promise<AuthStatus> {
@@ -58,7 +60,7 @@ export const api = {
   },
   async projects(): Promise<Project[]> {
     if (demoMode) { await pause(); return [...demoProjects]; }
-    return (await request<{ items: Project[] }>("/api/projects")).items;
+    return listItems(await request<ListResponse<Project>>("/api/projects"));
   },
   async createProject(input: ProjectInput): Promise<Project> {
     if (demoMode) {
@@ -96,7 +98,7 @@ export const api = {
   },
   async domains(): Promise<Domain[]> {
     if (demoMode) { await pause(); return [...demoDomains]; }
-    return (await request<{ items: Domain[] }>("/api/domains")).items;
+    return listItems(await request<ListResponse<Domain>>("/api/domains"));
   },
   async createDomain(projectId: string, hostname: string, https: boolean): Promise<Domain> {
     if (demoMode) {
@@ -168,7 +170,7 @@ export const api = {
   },
   async audit(): Promise<AuditLog[]> {
     if (demoMode) return demoAudit;
-    return (await request<{ items: AuditLog[] }>("/api/audit")).items;
+    return listItems(await request<ListResponse<AuditLog>>("/api/audit"));
   },
   async system(): Promise<SystemStatus> {
     if (demoMode) return demoSystem;

@@ -8,6 +8,31 @@ import (
 	"time"
 )
 
+func TestEmptyCollectionsAreNonNil(t *testing.T) {
+	ctx := context.Background()
+	database, err := Open(filepath.Join(t.TempDir(), "serverpal.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer database.Close()
+
+	projects, err := database.Projects(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	domains, err := database.Domains(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	logs, err := database.AuditLogs(ctx, 100)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if projects == nil || domains == nil || logs == nil {
+		t.Fatalf("empty collections must encode as arrays: projects=%v domains=%v logs=%v", projects, domains, logs)
+	}
+}
+
 func TestStoreLifecycleAndCascade(t *testing.T) {
 	ctx := context.Background()
 	database, err := Open(filepath.Join(t.TempDir(), "serverpal.db"))
